@@ -1,6 +1,6 @@
 import { Server } from 'socket.io';
 import { Server as HttpServer } from 'http';
-// import socketAuthMiddleware from './socketAuthMiddleware';
+import { socketAuthMiddleware } from '../middlewares/socketAuthMiddleware';
 
 export let io: Server;
 
@@ -10,6 +10,8 @@ export const initSocket = (server: HttpServer) => {
       origin: '*',
     },
   });
+
+  io.use(socketAuthMiddleware);
 
   io.on('connection', (socket) => {
     const user = (socket as any).user;

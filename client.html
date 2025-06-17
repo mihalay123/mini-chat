@@ -13,7 +13,10 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
       const socket = io('http://localhost:3000', {
-        // auth: { token: "твой JWT токен" } — позже добавим
+        auth: {
+          token:
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMyIsInVzZXJuYW1lIjoiYWxpY2UiLCJpYXQiOjE3NTAxNzU4ODYsImV4cCI6MTc1MDE3OTQ4Nn0.Enrfmbtxa66oHaHsBltYtrMZfiYie5jvRlcJjNxs_Xo',
+        },
       });
 
       socket.on('connect', () => {

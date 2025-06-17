@@ -10,9 +10,5 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/', (_, res) => {
-  res.send('Mini Chat API!');
-});
-
-app.get('/client', (_, res) => {
   res.sendFile('client.html', { root: './' });
 });
