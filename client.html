@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Chat</title>
+  </head>
+  <body>
+    <h1>Mini Chat Test</h1>
+    <input id="msg" type="text" placeholder="Message" />
+    <button onclick="sendMessage()">Send</button>
+
+    <ul id="chat"></ul>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+      const socket = io('http://localhost:3000', {
+        // auth: { token: "твой JWT токен" } — позже добавим
+      });
+
+      socket.on('connect', () => {
+        console.log('✅ connected');
+      });
+
+      socket.on('chat:message', (data) => {
+        const ul = document.getElementById('chat');
+        const li = document.createElement('li');
+        li.innerText = `${data.user}: ${data.text}`;
+        ul.appendChild(li);
+      });
+
+      function sendMessage() {
+        const msg = document.getElementById('msg').value;
+        socket.emit('chat:message', { text: msg });
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,41 @@
+# Node modules
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env.*
+
+# Build output
+dist/
+build/
+out/
+
+# Coverage
+coverage/
+
+# macOS system files
+.DS_Store
+
+# VS Code settings
+.vscode/
+
+# Optional: OS generated files
+Thumbs.db
+
+# Optional: TypeScript
+*.tsbuildinfo
+
+# Optional: PM2 logs
+pids
+*.pid
+*.seed
+
+# Optional:
