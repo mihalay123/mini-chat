@@ -16,7 +16,8 @@ export const socketAuthMiddleware = (
 
     (socket as any).user = { username: payload.username };
     next();
-  } catch (err) {
+  } catch (err: unknown) {
+    console.error('Socket authentication error:', (err as Error).message);
     next(new Error('Unauthorized'));
   }
 };
