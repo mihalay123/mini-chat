@@ -1,7 +1,10 @@
 import { Socket } from 'socket.io';
 import { verifyToken } from '../utils/jwt';
 
-export const socketAuthMiddleware = (socket: Socket, next: (err?: Error) => void) => {
+export const socketAuthMiddleware = (
+  socket: Socket,
+  next: (err?: Error) => void
+) => {
   const token = socket.handshake.auth.token;
 
   if (!token) {
@@ -10,7 +13,8 @@ export const socketAuthMiddleware = (socket: Socket, next: (err?: Error) => void
 
   try {
     const payload = verifyToken(token);
-    (socket as any).user = payload;
+
+    (socket as any).user = { username: payload.username };
     next();
   } catch (err) {
     next(new Error('Unauthorized'));

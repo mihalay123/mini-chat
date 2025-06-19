@@ -8,7 +8,7 @@ interface TokenPayload extends JwtPayload {
 export const verifyToken = (token: string) => {
   const decoded = jwt.verify(token, process.env.JWT_SECRET!);
 
-  if (typeof decoded === 'object' && decoded != null && 'id' in decoded && 'username' in decoded) {
+  if (typeof decoded === 'object' && decoded != null && 'username' in decoded) {
     return decoded as TokenPayload;
   }
 

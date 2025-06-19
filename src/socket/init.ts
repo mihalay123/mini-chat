@@ -15,12 +15,11 @@ export const initSocket = (server: HttpServer) => {
 
   io.on('connection', (socket) => {
     const user = (socket as any).user;
-    console.log(`🔌 User connected: ${user?.username ?? 'unknown'}`);
 
     socket.on('chat:message', (data) => {
       console.log(`${user.username}: ${data.text}`);
       io.emit('chat:message', {
-        // user: user.username,
+        user: user.username,
         text: data.text,
         timestamp: new Date().toISOString(),
       });
