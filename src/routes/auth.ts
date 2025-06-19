@@ -1,12 +1,11 @@
 import { Router, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import { PrismaClient } from './../generated/prisma';
 
 const router = Router();
 
-const registeredUsers: { username: string; password: string }[] = [
-  { username: 'admin', password: bcrypt.hashSync('password', 10) },
-];
+const prisma = new PrismaClient();
 
 router.post('/login', async (req: Request, res: Response) => {
   const { username, password } = req.body;
@@ -16,7 +15,9 @@ router.post('/login', async (req: Request, res: Response) => {
     return;
   }
 
-  const user = registeredUsers.find((user) => user.username === username);
+  const user = await prisma.user.findUnique({
+    where: { username },
+  });
 
   if (!user) {
     res.status(401).json({ error: 'Invalid credentials' });
@@ -31,7 +32,7 @@ router.post('/login', async (req: Request, res: Response) => {
   }
 
   const token = jwt.sign(
-    { username },
+    { id: user.id, username: user.username },
     process.env.JWT_SECRET || 'your_secret_here',
     {
       expiresIn: '1h',
@@ -52,7 +53,9 @@ router.post('/register', async (req: Request, res: Response) => {
     return;
   }
 
-  const userExists = registeredUsers.some((user) => user.username === username);
+  const userExists = await prisma.user.findUnique({
+    where: { username },
+  });
   if (userExists) {
     res.status(409).json({ error: 'User already exists' });
     return;
@@ -60,8 +63,26 @@ router.post('/register', async (req: Request, res: Response) => {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  registeredUsers.push({ username, password: hashedPassword });
-  res.json({ message: 'Registration successful', user: { username } });
+  const newUser = await prisma.user.create({
+    data: {
+      username,
+      password: hashedPassword,
+    },
+  });
+
+  const token = jwt.sign(
+    { id: newUser.id, username: newUser.username },
+    process.env.JWT_SECRET || 'your_secret_here',
+    {
+      expiresIn: '1h',
+    }
+  );
+
+  res.json({
+    message: 'Registration successful',
+    user: { id: newUser.id, username: newUser.username },
+    token,
+  });
 });
 
 export default router;
