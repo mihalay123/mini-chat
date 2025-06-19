@@ -2,12 +2,16 @@ import { Router, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { PrismaClient } from './../generated/prisma';
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  saveRefreshToken,
+} from '../utils/token';
+import { verifyToken } from '../utils/jwt';
 
 const router = Router();
 
 const prisma = new PrismaClient();
-
-const JWT_SECRET = process.env.JWT_SECRET || 'secret_key_here';
 
 router.post('/login', async (req: Request, res: Response) => {
   try {
@@ -34,15 +38,24 @@ router.post('/login', async (req: Request, res: Response) => {
       return;
     }
 
-    const token = jwt.sign(
-      { id: user.id, username: user.username },
-      JWT_SECRET,
-      {
-        expiresIn: '1h',
-      }
-    );
+    const token = generateAccessToken({
+      id: user.id,
+      username: user.username,
+    });
 
-    res.json({ message: 'Login successful', token });
+    const refreshToken = generateRefreshToken({
+      id: user.id,
+      username: user.username,
+    });
+
+    await saveRefreshToken(prisma, refreshToken, user.id, req);
+
+    res.json({
+      message: 'Login successful',
+      user: { id: user.id, username: user.username },
+      token,
+      refreshToken,
+    });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -51,6 +64,48 @@ router.post('/login', async (req: Request, res: Response) => {
 
 router.post('/logout', (req: Request, res: Response) => {
   res.json({ message: 'Logout successful' });
+});
+
+router.post('/refresh', async (req: Request, res: Response) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      res.status(401).json({ error: 'No refresh token provided' });
+      return;
+    }
+
+    const payload = verifyToken(refreshToken);
+
+    if (!payload) {
+      res.status(401).json({ error: 'Invalid refresh token' });
+      return;
+    }
+
+    const storedToken = await prisma.refreshToken.findUnique({
+      where: { token: refreshToken },
+    });
+
+    if (!storedToken) {
+      res.status(403).json({ error: 'Refresh token not found' });
+      return;
+    }
+
+    if (storedToken.expiresAt < new Date()) {
+      res.status(403).json({ error: 'Refresh token expired' });
+      return;
+    }
+
+    const newAccessToken = generateAccessToken({
+      id: payload.id,
+      username: payload.username,
+    });
+
+    res.json({ accessToken: newAccessToken });
+  } catch (error) {
+    console.error('Refresh token error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 router.post('/register', async (req: Request, res: Response) => {
@@ -78,18 +133,23 @@ router.post('/register', async (req: Request, res: Response) => {
       },
     });
 
-    const token = jwt.sign(
-      { id: newUser.id, username: newUser.username },
-      JWT_SECRET,
-      {
-        expiresIn: '1h',
-      }
-    );
+    const token = generateAccessToken({
+      id: newUser.id,
+      username: newUser.username,
+    });
+
+    const refreshToken = generateRefreshToken({
+      id: newUser.id,
+      username: newUser.username,
+    });
+
+    await saveRefreshToken(prisma, refreshToken, newUser.id, req);
 
     res.json({
       message: 'Registration successful',
       user: { id: newUser.id, username: newUser.username },
       token,
+      refreshToken,
     });
   } catch (error) {
     console.error('Registration error:', error);
