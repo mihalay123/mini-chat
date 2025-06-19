@@ -39,3 +39,4 @@ pids
 *.seed
 
 # Optional:
+/src/generated/prisma
