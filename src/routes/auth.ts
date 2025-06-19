@@ -1,13 +1,14 @@
 import { Router, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 
 const router = Router();
 
 const registeredUsers: { username: string; password: string }[] = [
-  { username: 'admin', password: 'password' },
+  { username: 'admin', password: bcrypt.hashSync('password', 10) },
 ];
 
-router.post('/login', (req: Request, res: Response) => {
+router.post('/login', async (req: Request, res: Response) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -15,11 +16,16 @@ router.post('/login', (req: Request, res: Response) => {
     return;
   }
 
-  const user = registeredUsers.find(
-    (user) => user.username === username && user.password === password
-  );
+  const user = registeredUsers.find((user) => user.username === username);
 
   if (!user) {
+    res.status(401).json({ error: 'Invalid credentials' });
+    return;
+  }
+
+  const match = await bcrypt.compare(password, user.password);
+
+  if (!match) {
     res.status(401).json({ error: 'Invalid credentials' });
     return;
   }
@@ -39,7 +45,7 @@ router.post('/logout', (req: Request, res: Response) => {
   res.json({ message: 'Logout successful' });
 });
 
-router.post('/register', (req: Request, res: Response) => {
+router.post('/register', async (req: Request, res: Response) => {
   const { username, password } = req.body;
   if (!username || !password) {
     res.status(400).json({ error: 'Username and password are required' });
@@ -52,7 +58,9 @@ router.post('/register', (req: Request, res: Response) => {
     return;
   }
 
-  registeredUsers.push({ username, password });
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  registeredUsers.push({ username, password: hashedPassword });
   res.json({ message: 'Registration successful', user: { username } });
 });
 
