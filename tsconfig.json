@@ -6,7 +6,13 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "baseUrl": "./src",
+    "paths": {
+      "@features/*": ["features/*"],
+      "@generated/*": ["generated/*"],
+      "@shared/*": ["shared/*"]
+    }
   },
   "include": ["src"]
 }
