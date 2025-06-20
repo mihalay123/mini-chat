@@ -1,8 +1,8 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import { PrismaClient } from './../generated/prisma';
-import { generateAccessToken, generateRefreshToken, saveRefreshToken } from '../utils/token';
-import { verifyToken } from '../utils/jwt';
+import { verifyToken } from '@shared/service/jwt';
+import { generateAccessToken, generateRefreshToken } from '@features/auth/service/jwt';
 
 const router = Router();
 
@@ -43,7 +43,7 @@ router.post('/login', async (req: Request, res: Response) => {
       username: user.username,
     });
 
-    await saveRefreshToken(prisma, refreshToken, user.id, req);
+    // await saveRefreshToken(prisma, refreshToken, user.id, req);
 
     res.json({
       message: 'Login successful',
@@ -138,7 +138,7 @@ router.post('/register', async (req: Request, res: Response) => {
       username: newUser.username,
     });
 
-    await saveRefreshToken(prisma, refreshToken, newUser.id, req);
+    // await saveRefreshToken(prisma, refreshToken, newUser.id, req);
 
     res.json({
       message: 'Registration successful',

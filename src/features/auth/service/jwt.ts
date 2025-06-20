@@ -13,16 +13,3 @@ export const generateRefreshToken = (payload: object) => {
     expiresIn: '7d',
   });
 };
-
-export const verifyToken = <T = any>(token: string): T => {
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    if (typeof decoded === 'object' && decoded !== null) {
-      return decoded as T;
-    }
-    throw new Error('Invalid token');
-  } catch (error) {
-    console.warn(`Token verification failed: ${(error as Error).message}`);
-    return null as T;
-  }
-};

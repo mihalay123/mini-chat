@@ -1,10 +1,7 @@
+import { verifyToken } from '@shared/service/jwt';
 import { Socket } from 'socket.io';
-import { verifyToken } from '../utils/jwt';
 
-export const socketAuthMiddleware = (
-  socket: Socket,
-  next: (err?: Error) => void
-) => {
+export const socketAuthMiddleware = (socket: Socket, next: (err?: Error) => void) => {
   const token = socket.handshake.auth.token;
 
   if (!token) {

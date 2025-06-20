@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { AuthRepository } from '../model/AuthRepository';
-import { verifyToken } from '../service/jwt';
+import { verifyToken } from '@shared/service/jwt';
 
 export const logout = (authRepo: AuthRepository) => {
   return async (req: Request, res: Response) => {
