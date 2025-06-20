@@ -43,4 +43,9 @@ export const prismaAuthRepository: AuthRepository = {
       where: { token },
     });
   },
+
+  async findRefreshToken(token) {
+    const tokenRecord = await prisma.refreshToken.findUnique({ where: { token } });
+    return tokenRecord ? { expiresAt: tokenRecord.expiresAt } : null;
+  },
 };

@@ -5,4 +5,5 @@ export interface AuthRepository {
   createUser(username: string, hashedPassword: string): Promise<User>;
   saveRefreshToken(userId: string, token: string, meta: { ip: string; userAgent: string }): Promise<void>;
   revokeRefreshToken(token: string): Promise<void>;
+  findRefreshToken(token: string): Promise<{ expiresAt: Date } | null>;
 }
