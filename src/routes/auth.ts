@@ -1,12 +1,7 @@
 import { Router, Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { PrismaClient } from './../generated/prisma';
-import {
-  generateAccessToken,
-  generateRefreshToken,
-  saveRefreshToken,
-} from '../utils/token';
+import { generateAccessToken, generateRefreshToken, saveRefreshToken } from '../utils/token';
 import { verifyToken } from '../utils/jwt';
 
 const router = Router();
