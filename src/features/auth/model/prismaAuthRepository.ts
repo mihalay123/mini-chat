@@ -37,4 +37,10 @@ export const prismaAuthRepository: AuthRepository = {
       },
     });
   },
+
+  async revokeRefreshToken(token) {
+    await prisma.refreshToken.deleteMany({
+      where: { token },
+    });
+  },
 };

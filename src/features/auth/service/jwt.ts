@@ -22,6 +22,7 @@ export const verifyToken = <T = any>(token: string): T => {
     }
     throw new Error('Invalid token');
   } catch (error) {
-    throw new Error(`Token verification failed: ${(error as Error).message}`);
+    console.warn(`Token verification failed: ${(error as Error).message}`);
+    return null as T;
   }
 };
