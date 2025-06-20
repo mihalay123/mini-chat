@@ -1,18 +1,25 @@
 import { Request, Response } from 'express';
 import { AuthRepository } from '../model/AuthRepository';
-import { comparePassword } from '../service/hash';
+import { hashPassword } from '../service/hash';
 import { generateAccessToken, generateRefreshToken } from '../service/jwt';
 import { mapUserToDto } from '@shared/types/user';
 
-export const login = (authRepo: AuthRepository) => {
+export const register = (authRepo: AuthRepository) => {
   return async (req: Request, res: Response) => {
     const { username, password } = req.body;
 
-    const user = await authRepo.findUserByUsername(username);
-    const isValidPassword = await comparePassword(password, user?.password || '');
-    if (!user || !isValidPassword) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password are required' });
     }
+
+    const existingUser = await authRepo.findUserByUsername(username);
+
+    if (existingUser) {
+      return res.status(409).json({ error: 'User already exists' });
+    }
+
+    const hashedPassword = await hashPassword(password);
+    const user = await authRepo.createUser(username, hashedPassword);
 
     const accessToken = generateAccessToken({ id: user.id, username: user.username });
     const refreshToken = generateRefreshToken({ id: user.id, username: user.username });
@@ -22,7 +29,7 @@ export const login = (authRepo: AuthRepository) => {
       userAgent: req.headers['user-agent'] || '',
     });
 
-    return res.status(200).json({
+    return res.status(201).json({
       user: mapUserToDto(user),
       accessToken,
       refreshToken,

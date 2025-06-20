@@ -17,8 +17,8 @@ export const prismaAuthRepository: AuthRepository = {
     return userEntity;
   },
 
-  async saveUser(username, hashedPassword) {
-    await prisma.user.create({
+  async createUser(username, hashedPassword) {
+    return await prisma.user.create({
       data: {
         username,
         password: hashedPassword,
