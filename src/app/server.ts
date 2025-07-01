@@ -1,6 +1,6 @@
 import { createServer } from 'http';
 import { app } from './app';
-import { initSocket } from './socket/init';
+import { initSocket } from './init';
 
 const server = createServer(app);
 initSocket(server);

@@ -1,6 +1,6 @@
 import { Server } from 'socket.io';
 import { Server as HttpServer } from 'http';
-import { socketAuthMiddleware } from '../middlewares/socketAuthMiddleware';
+import { socketAuthMiddleware } from '../shared/middlewares/socketAuthMiddleware';
 
 export let io: Server;
 

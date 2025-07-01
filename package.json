@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only --project tsconfig.json -r tsconfig-paths/register src/server.ts",
+    "dev": "ts-node-dev --respawn --transpile-only --project tsconfig.json -r tsconfig-paths/register src/app/server.ts",
     "start": "tsc && node dist/server.js"
   },
   "keywords": [],
