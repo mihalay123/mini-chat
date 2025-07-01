@@ -1,7 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-// import authRoutes from './routes/auth';
 import authRoutes from './features/auth/routes';
 
 interface ErrorWithStatus extends Error {
