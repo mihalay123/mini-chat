@@ -8,6 +8,10 @@ export const login = (authRepo: AuthRepository) => {
   return async (req: Request, res: Response) => {
     const { username, password } = req.body;
 
+    if (!username || !password) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
     const user = await authRepo.findUserByUsername(username);
     const isValidPassword = await comparePassword(password, user?.password || '');
     if (!user || !isValidPassword) {
