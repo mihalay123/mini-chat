@@ -5,7 +5,6 @@ import { Request, Response } from 'express';
 
 describe('login use case', () => {
   it('returns 200 and tokens for valid credentials', async () => {
-    console.log('✅ test runs');
     const password = 'secret';
     const hashedPassword = await hashPassword(password);
 
