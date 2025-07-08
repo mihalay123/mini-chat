@@ -19,10 +19,43 @@ export const prismaChatRepository: ChatRepository = {
           members: true,
         },
       });
+
       return chat;
     } catch (error) {
       console.error('Error creating chat:', error);
       return null;
+    }
+  },
+
+  async getChatsByUserId(userId) {
+    try {
+      const chats = await prisma.chat.findMany({
+        where: {
+          members: {
+            some: {
+              userId: userId,
+            },
+          },
+        },
+        include: {
+          members: {
+            where: { userId: userId },
+            select: { userId: true },
+          },
+          _count: {
+            select: { members: true },
+          },
+          messages: {
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+          },
+        },
+      });
+
+      return chats;
+    } catch (error) {
+      console.error('Error getting chats:', error);
+      return [];
     }
   },
 };
