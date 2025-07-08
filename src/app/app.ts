@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from '../features/auth/routes';
+import userRoutes from '../features/user/routes';
 
 interface ErrorWithStatus extends Error {
   status?: number;
@@ -24,3 +25,4 @@ app.get('/', (_, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
