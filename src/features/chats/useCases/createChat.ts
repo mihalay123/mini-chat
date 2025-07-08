@@ -1,5 +1,3 @@
-import { ChatUserRole } from '@prisma/client';
-import { prisma } from '@shared/prisma';
 import { Request, Response } from 'express';
 import { ChatRepository } from '../model/ChatRepository';
 
