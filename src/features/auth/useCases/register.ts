@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
 import { AuthRepository } from '../model/AuthRepository';
-import { hashPassword } from '../service/hash';
+
 import { generateAccessToken, generateRefreshToken } from '../service/jwt';
 import { mapUserToDto } from '@shared/types/user';
+import { hashPassword } from '@shared/service/hash';
 
 export const register = (authRepo: AuthRepository) => {
   return async (req: Request, res: Response) => {
