@@ -16,11 +16,6 @@ export const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use((err: ErrorWithStatus, req: Request, res: Response, next: NextFunction) => {
-  console.error('[Unhandled error]', err);
-  res.status(500).json({ error: 'Something went wrong' });
-});
-
 app.get('/', (_, res) => {
   res.sendFile('client.html', { root: './' });
 });
@@ -28,3 +23,8 @@ app.get('/', (_, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/chats', chatRoutes);
+
+app.use((err: ErrorWithStatus, req: Request, res: Response, next: NextFunction) => {
+  console.error('Global error handler:', err);
+  res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' });
+});
