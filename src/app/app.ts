@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from '../features/auth/routes';
 import userRoutes from '../features/user/routes';
+import chatRoutes from '../features/chats/routes';
 
 interface ErrorWithStatus extends Error {
   status?: number;
@@ -26,3 +27,4 @@ app.get('/', (_, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/chats', chatRoutes);
