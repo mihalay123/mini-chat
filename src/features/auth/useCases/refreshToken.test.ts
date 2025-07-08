@@ -1,3 +1,4 @@
+import { createMockRepo, createReq, createRes } from './__test-utils__/authTestHelpers';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { refreshToken } from './refreshToken';
 import { Request, Response } from 'express';
@@ -22,11 +23,7 @@ describe('refreshToken use case', () => {
   });
 
   it('returns 200 and new access token for valid refresh token', async () => {
-    const mockRepo = {
-      findUserByUsername: vi.fn(),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
+    const mockRepo = createMockRepo({
       findRefreshToken: vi.fn().mockResolvedValue({
         id: 'token-id',
         token: 'valid-refresh-token',
@@ -34,7 +31,7 @@ describe('refreshToken use case', () => {
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // expires in 24 hours
         createdAt: new Date(),
       }),
-    };
+    });
 
     mockVerifyToken.mockReturnValue({
       id: 'user-id',
@@ -43,16 +40,8 @@ describe('refreshToken use case', () => {
 
     mockGenerateAccessToken.mockReturnValue('new-access-token');
 
-    const req = {
-      body: {
-        refreshToken: 'valid-refresh-token',
-      },
-    } as Request;
-
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const req = createReq({ refreshToken: 'valid-refresh-token' });
+    const res = createRes();
 
     await refreshToken(mockRepo)(req, res);
 
@@ -69,22 +58,9 @@ describe('refreshToken use case', () => {
   });
 
   it('returns 401 if refresh token is missing', async () => {
-    const mockRepo = {
-      findUserByUsername: vi.fn(),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
-      findRefreshToken: vi.fn(),
-    };
-
-    const req = {
-      body: {},
-    } as Request;
-
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const mockRepo = createMockRepo({});
+    const req = createReq({});
+    const res = createRes();
 
     await refreshToken(mockRepo)(req, res);
 
@@ -98,24 +74,9 @@ describe('refreshToken use case', () => {
   });
 
   it('returns 401 if refresh token is empty string', async () => {
-    const mockRepo = {
-      findUserByUsername: vi.fn(),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
-      findRefreshToken: vi.fn(),
-    };
-
-    const req = {
-      body: {
-        refreshToken: '',
-      },
-    } as Request;
-
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const mockRepo = createMockRepo({});
+    const req = createReq({ refreshToken: '' });
+    const res = createRes();
 
     await refreshToken(mockRepo)(req, res);
 
@@ -128,26 +89,12 @@ describe('refreshToken use case', () => {
   });
 
   it('returns 401 if refresh token verification fails', async () => {
-    const mockRepo = {
-      findUserByUsername: vi.fn(),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
-      findRefreshToken: vi.fn(),
-    };
+    const mockRepo = createMockRepo({});
 
     mockVerifyToken.mockReturnValue(null);
 
-    const req = {
-      body: {
-        refreshToken: 'invalid-refresh-token',
-      },
-    } as Request;
-
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const req = createReq({ refreshToken: 'invalid-refresh-token' });
+    const res = createRes();
 
     await refreshToken(mockRepo)(req, res);
 
@@ -161,29 +108,17 @@ describe('refreshToken use case', () => {
   });
 
   it('returns 403 if refresh token is not found in database', async () => {
-    const mockRepo = {
-      findUserByUsername: vi.fn(),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
+    const mockRepo = createMockRepo({
       findRefreshToken: vi.fn().mockResolvedValue(null),
-    };
+    });
 
     mockVerifyToken.mockReturnValue({
       id: 'user-id',
       username: 'testuser',
     });
 
-    const req = {
-      body: {
-        refreshToken: 'nonexistent-token',
-      },
-    } as Request;
-
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const req = createReq({ refreshToken: 'nonexistent-token' });
+    const res = createRes();
 
     await refreshToken(mockRepo)(req, res);
 
@@ -197,11 +132,7 @@ describe('refreshToken use case', () => {
   });
 
   it('returns 403 if refresh token is expired', async () => {
-    const mockRepo = {
-      findUserByUsername: vi.fn(),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
+    const mockRepo = createMockRepo({
       findRefreshToken: vi.fn().mockResolvedValue({
         id: 'token-id',
         token: 'expired-refresh-token',
@@ -209,23 +140,15 @@ describe('refreshToken use case', () => {
         expiresAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // expired 24 hours ago
         createdAt: new Date(),
       }),
-    };
+    });
 
     mockVerifyToken.mockReturnValue({
       id: 'user-id',
       username: 'testuser',
     });
 
-    const req = {
-      body: {
-        refreshToken: 'expired-refresh-token',
-      },
-    } as Request;
-
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const req = createReq({ refreshToken: 'expired-refresh-token' });
+    const res = createRes();
 
     await refreshToken(mockRepo)(req, res);
 
@@ -239,29 +162,17 @@ describe('refreshToken use case', () => {
   });
 
   it('handles repository error gracefully', async () => {
-    const mockRepo = {
-      findUserByUsername: vi.fn(),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
+    const mockRepo = createMockRepo({
       findRefreshToken: vi.fn().mockRejectedValue(new Error('Database connection failed')),
-    };
+    });
 
     mockVerifyToken.mockReturnValue({
       id: 'user-id',
       username: 'testuser',
     });
 
-    const req = {
-      body: {
-        refreshToken: 'valid-refresh-token',
-      },
-    } as Request;
-
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const req = createReq({ refreshToken: 'valid-refresh-token' });
+    const res = createRes();
 
     await expect(refreshToken(mockRepo)(req, res)).rejects.toThrow('Database connection failed');
     expect(mockVerifyToken).toHaveBeenCalledWith('valid-refresh-token');
@@ -269,39 +180,21 @@ describe('refreshToken use case', () => {
   });
 
   it('handles JWT verification error gracefully', async () => {
-    const mockRepo = {
-      findUserByUsername: vi.fn(),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
-      findRefreshToken: vi.fn(),
-    };
+    const mockRepo = createMockRepo({});
 
     mockVerifyToken.mockImplementation(() => {
       throw new Error('JWT verification failed');
     });
 
-    const req = {
-      body: {
-        refreshToken: 'malformed-token',
-      },
-    } as Request;
-
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const req = createReq({ refreshToken: 'malformed-token' });
+    const res = createRes();
 
     await expect(refreshToken(mockRepo)(req, res)).rejects.toThrow('JWT verification failed');
     expect(mockRepo.findRefreshToken).not.toHaveBeenCalled();
   });
 
   it('handles access token generation error gracefully', async () => {
-    const mockRepo = {
-      findUserByUsername: vi.fn(),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
+    const mockRepo = createMockRepo({
       findRefreshToken: vi.fn().mockResolvedValue({
         id: 'token-id',
         token: 'valid-refresh-token',
@@ -309,7 +202,7 @@ describe('refreshToken use case', () => {
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
         createdAt: new Date(),
       }),
-    };
+    });
 
     mockVerifyToken.mockReturnValue({
       id: 'user-id',
@@ -320,16 +213,8 @@ describe('refreshToken use case', () => {
       throw new Error('Token generation failed');
     });
 
-    const req = {
-      body: {
-        refreshToken: 'valid-refresh-token',
-      },
-    } as Request;
-
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const req = createReq({ refreshToken: 'valid-refresh-token' });
+    const res = createRes();
 
     await expect(refreshToken(mockRepo)(req, res)).rejects.toThrow('Token generation failed');
     expect(mockVerifyToken).toHaveBeenCalledWith('valid-refresh-token');
@@ -337,11 +222,7 @@ describe('refreshToken use case', () => {
   });
 
   it('generates access token with correct payload', async () => {
-    const mockRepo = {
-      findUserByUsername: vi.fn(),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
+    const mockRepo = createMockRepo({
       findRefreshToken: vi.fn().mockResolvedValue({
         id: 'token-id',
         token: 'valid-refresh-token',
@@ -349,7 +230,7 @@ describe('refreshToken use case', () => {
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
         createdAt: new Date(),
       }),
-    };
+    });
 
     const userPayload = {
       id: 'user-123',
@@ -359,16 +240,8 @@ describe('refreshToken use case', () => {
     mockVerifyToken.mockReturnValue(userPayload);
     mockGenerateAccessToken.mockReturnValue('generated-access-token');
 
-    const req = {
-      body: {
-        refreshToken: 'valid-refresh-token',
-      },
-    } as Request;
-
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const req = createReq({ refreshToken: 'valid-refresh-token' });
+    const res = createRes();
 
     await refreshToken(mockRepo)(req, res);
 

@@ -1,3 +1,4 @@
+import { createMockRepo, createReq, createRes } from './__test-utils__/authTestHelpers';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { logout } from './logout';
 import { Request, Response } from 'express';
@@ -15,26 +16,12 @@ describe('logout use case', () => {
   });
 
   it('returns 200 and logs out successfully with valid refresh token', async () => {
-    const mockRepo = {
-      findUserByUsername: vi.fn(),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
-      findRefreshToken: vi.fn(),
-    };
+    const mockRepo = createMockRepo({ revokeRefreshToken: vi.fn() });
 
     mockVerifyToken.mockReturnValue({ id: 'user-id' });
 
-    const req = {
-      body: {
-        refreshToken: 'valid-refresh-token',
-      },
-    } as Request;
-
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const req = createReq({ refreshToken: 'valid-refresh-token' });
+    const res = createRes();
 
     await logout(mockRepo)(req, res);
 
@@ -47,22 +34,9 @@ describe('logout use case', () => {
   });
 
   it('returns 400 if refresh token is missing', async () => {
-    const mockRepo = {
-      findUserByUsername: vi.fn(),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
-      findRefreshToken: vi.fn(),
-    };
-
-    const req = {
-      body: {},
-    } as Request;
-
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const mockRepo = createMockRepo({});
+    const req = createReq({});
+    const res = createRes();
 
     await logout(mockRepo)(req, res);
 
@@ -75,24 +49,9 @@ describe('logout use case', () => {
   });
 
   it('returns 400 if refresh token is empty string', async () => {
-    const mockRepo = {
-      findUserByUsername: vi.fn(),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
-      findRefreshToken: vi.fn(),
-    };
-
-    const req = {
-      body: {
-        refreshToken: '',
-      },
-    } as Request;
-
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const mockRepo = createMockRepo({});
+    const req = createReq({ refreshToken: '' });
+    const res = createRes();
 
     await logout(mockRepo)(req, res);
 
@@ -105,26 +64,12 @@ describe('logout use case', () => {
   });
 
   it('returns 401 if refresh token is invalid', async () => {
-    const mockRepo = {
-      findUserByUsername: vi.fn(),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
-      findRefreshToken: vi.fn(),
-    };
+    const mockRepo = createMockRepo({});
 
     mockVerifyToken.mockReturnValue(null);
 
-    const req = {
-      body: {
-        refreshToken: 'invalid-refresh-token',
-      },
-    } as Request;
-
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const req = createReq({ refreshToken: 'invalid-refresh-token' });
+    const res = createRes();
 
     await logout(mockRepo)(req, res);
 
@@ -137,54 +82,28 @@ describe('logout use case', () => {
   });
 
   it('returns 401 if refresh token verification throws an error', async () => {
-    const mockRepo = {
-      findUserByUsername: vi.fn(),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
-      findRefreshToken: vi.fn(),
-    };
+    const mockRepo = createMockRepo({});
 
     mockVerifyToken.mockImplementation(() => {
       throw new Error('Token verification failed');
     });
 
-    const req = {
-      body: {
-        refreshToken: 'malformed-token',
-      },
-    } as Request;
-
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const req = createReq({ refreshToken: 'malformed-token' });
+    const res = createRes();
 
     await expect(logout(mockRepo)(req, res)).rejects.toThrow('Token verification failed');
     expect(mockRepo.revokeRefreshToken).not.toHaveBeenCalled();
   });
 
   it('handles repository error gracefully', async () => {
-    const mockRepo = {
-      findUserByUsername: vi.fn(),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
+    const mockRepo = createMockRepo({
       revokeRefreshToken: vi.fn().mockRejectedValue(new Error('Database connection failed')),
-      findRefreshToken: vi.fn(),
-    };
+    });
 
     mockVerifyToken.mockReturnValue({ id: 'user-id' });
 
-    const req = {
-      body: {
-        refreshToken: 'valid-refresh-token',
-      },
-    } as Request;
-
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const req = createReq({ refreshToken: 'valid-refresh-token' });
+    const res = createRes();
 
     await expect(logout(mockRepo)(req, res)).rejects.toThrow('Database connection failed');
     expect(mockVerifyToken).toHaveBeenCalledWith('valid-refresh-token');
@@ -192,27 +111,13 @@ describe('logout use case', () => {
   });
 
   it('calls revokeRefreshToken with correct token', async () => {
-    const mockRepo = {
-      findUserByUsername: vi.fn(),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
-      findRefreshToken: vi.fn(),
-    };
+    const mockRepo = createMockRepo({ revokeRefreshToken: vi.fn() });
 
     mockVerifyToken.mockReturnValue({ id: 'user-123' });
 
     const refreshToken = 'specific-refresh-token-value';
-    const req = {
-      body: {
-        refreshToken,
-      },
-    } as Request;
-
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const req = createReq({ refreshToken });
+    const res = createRes();
 
     await logout(mockRepo)(req, res);
 

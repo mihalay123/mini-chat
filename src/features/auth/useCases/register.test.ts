@@ -3,6 +3,7 @@ import { register } from './register';
 import { Request, Response } from 'express';
 import { hashPassword } from '../service/hash';
 import * as authJwtService from '../service/jwt';
+import { createReq, createMockRepo, createRes } from './__test-utils__/authTestHelpers';
 
 // Mock the JWT service
 vi.mock('../service/jwt', () => ({
@@ -19,9 +20,8 @@ describe('register use case', () => {
   });
 
   it('returns 201 and creates user with valid credentials', async () => {
-    const mockRepo = {
+    const mockRepo = createMockRepo({
       findUserByUsername: vi.fn().mockResolvedValue(null),
-      saveRefreshToken: vi.fn(),
       createUser: vi.fn().mockResolvedValue({
         id: 'new-user-id',
         username: 'newuser',
@@ -29,28 +29,21 @@ describe('register use case', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       }),
-      revokeRefreshToken: vi.fn(),
-      findRefreshToken: vi.fn(),
-    };
+    });
 
     mockGenerateAccessToken.mockReturnValue('new-access-token');
     mockGenerateRefreshToken.mockReturnValue('new-refresh-token');
 
-    const req = {
-      body: {
+    const req = createReq(
+      {
         username: 'newuser',
         password: 'password123',
       },
-      ip: '127.0.0.1',
-      headers: {
-        'user-agent': 'TestAgent',
-      },
-    } as Request;
+      '127.0.0.1',
+      'TestAgent'
+    );
 
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const res = createRes();
 
     await register(mockRepo)(req, res);
 
@@ -80,13 +73,7 @@ describe('register use case', () => {
   });
 
   it('returns 400 if username is missing', async () => {
-    const mockRepo = {
-      findUserByUsername: vi.fn(),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
-      findRefreshToken: vi.fn(),
-    };
+    const mockRepo = createMockRepo({});
 
     const req = {
       body: {
@@ -98,10 +85,7 @@ describe('register use case', () => {
       },
     } as Request;
 
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const res = createRes();
 
     await register(mockRepo)(req, res);
 
@@ -114,28 +98,11 @@ describe('register use case', () => {
   });
 
   it('returns 400 if password is missing', async () => {
-    const mockRepo = {
-      findUserByUsername: vi.fn(),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
-      findRefreshToken: vi.fn(),
-    };
+    const mockRepo = createMockRepo({});
 
-    const req = {
-      body: {
-        username: 'newuser',
-      },
-      ip: '127.0.0.1',
-      headers: {
-        'user-agent': 'TestAgent',
-      },
-    } as Request;
+    const req = createReq({ username: 'newuser' }, '127.0.0.1', 'TestAgent');
 
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const res = createRes();
 
     await register(mockRepo)(req, res);
 
@@ -148,26 +115,11 @@ describe('register use case', () => {
   });
 
   it('returns 400 if both username and password are missing', async () => {
-    const mockRepo = {
-      findUserByUsername: vi.fn(),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
-      findRefreshToken: vi.fn(),
-    };
+    const mockRepo = createMockRepo({});
 
-    const req = {
-      body: {},
-      ip: '127.0.0.1',
-      headers: {
-        'user-agent': 'TestAgent',
-      },
-    } as Request;
+    const req = createReq({}, '127.0.0.1', 'TestAgent');
 
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const res = createRes();
 
     await register(mockRepo)(req, res);
 
@@ -180,29 +132,11 @@ describe('register use case', () => {
   });
 
   it('returns 400 if username is empty string', async () => {
-    const mockRepo = {
-      findUserByUsername: vi.fn(),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
-      findRefreshToken: vi.fn(),
-    };
+    const mockRepo = createMockRepo({});
 
-    const req = {
-      body: {
-        username: '',
-        password: 'password123',
-      },
-      ip: '127.0.0.1',
-      headers: {
-        'user-agent': 'TestAgent',
-      },
-    } as Request;
+    const req = createReq({ username: '', password: 'password123' }, '127.0.0.1', 'TestAgent');
 
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const res = createRes();
 
     await register(mockRepo)(req, res);
 
@@ -215,29 +149,11 @@ describe('register use case', () => {
   });
 
   it('returns 400 if password is empty string', async () => {
-    const mockRepo = {
-      findUserByUsername: vi.fn(),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
-      findRefreshToken: vi.fn(),
-    };
+    const mockRepo = createMockRepo({});
 
-    const req = {
-      body: {
-        username: 'newuser',
-        password: '',
-      },
-      ip: '127.0.0.1',
-      headers: {
-        'user-agent': 'TestAgent',
-      },
-    } as Request;
+    const req = createReq({ username: 'newuser', password: '' }, '127.0.0.1', 'TestAgent');
 
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const res = createRes();
 
     await register(mockRepo)(req, res);
 
@@ -250,7 +166,7 @@ describe('register use case', () => {
   });
 
   it('returns 409 if user already exists', async () => {
-    const mockRepo = {
+    const mockRepo = createMockRepo({
       findUserByUsername: vi.fn().mockResolvedValue({
         id: 'existing-user-id',
         username: 'existinguser',
@@ -258,27 +174,11 @@ describe('register use case', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       }),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
-      findRefreshToken: vi.fn(),
-    };
+    });
 
-    const req = {
-      body: {
-        username: 'existinguser',
-        password: 'password123',
-      },
-      ip: '127.0.0.1',
-      headers: {
-        'user-agent': 'TestAgent',
-      },
-    } as Request;
+    const req = createReq({ username: 'existinguser', password: 'password123' }, '127.0.0.1', 'TestAgent');
 
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const res = createRes();
 
     await register(mockRepo)(req, res);
 
@@ -293,9 +193,8 @@ describe('register use case', () => {
   });
 
   it('handles missing ip and user-agent gracefully', async () => {
-    const mockRepo = {
+    const mockRepo = createMockRepo({
       findUserByUsername: vi.fn().mockResolvedValue(null),
-      saveRefreshToken: vi.fn(),
       createUser: vi.fn().mockResolvedValue({
         id: 'new-user-id',
         username: 'newuser',
@@ -303,25 +202,14 @@ describe('register use case', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       }),
-      revokeRefreshToken: vi.fn(),
-      findRefreshToken: vi.fn(),
-    };
+    });
 
     mockGenerateAccessToken.mockReturnValue('new-access-token');
     mockGenerateRefreshToken.mockReturnValue('new-refresh-token');
 
-    const req = {
-      body: {
-        username: 'newuser',
-        password: 'password123',
-      },
-      headers: {},
-    } as Request;
+    const req = createReq({ username: 'exnewuseristinguser', password: 'password123' }, '', '');
 
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const res = createRes();
 
     await register(mockRepo)(req, res);
 
@@ -333,29 +221,13 @@ describe('register use case', () => {
   });
 
   it('handles repository error in findUserByUsername gracefully', async () => {
-    const mockRepo = {
+    const mockRepo = createMockRepo({
       findUserByUsername: vi.fn().mockRejectedValue(new Error('Database connection failed')),
-      saveRefreshToken: vi.fn(),
-      createUser: vi.fn(),
-      revokeRefreshToken: vi.fn(),
-      findRefreshToken: vi.fn(),
-    };
+    });
 
-    const req = {
-      body: {
-        username: 'newuser',
-        password: 'password123',
-      },
-      ip: '127.0.0.1',
-      headers: {
-        'user-agent': 'TestAgent',
-      },
-    } as Request;
+    const req = createReq({ username: 'newuser', password: 'password123' }, '127.0.0.1', 'TestAgent');
 
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const res = createRes();
 
     await expect(register(mockRepo)(req, res)).rejects.toThrow('Database connection failed');
     expect(mockRepo.findUserByUsername).toHaveBeenCalledWith('newuser');
@@ -363,29 +235,14 @@ describe('register use case', () => {
   });
 
   it('handles repository error in createUser gracefully', async () => {
-    const mockRepo = {
+    const mockRepo = createMockRepo({
       findUserByUsername: vi.fn().mockResolvedValue(null),
-      saveRefreshToken: vi.fn(),
       createUser: vi.fn().mockRejectedValue(new Error('Failed to create user')),
-      revokeRefreshToken: vi.fn(),
-      findRefreshToken: vi.fn(),
-    };
+    });
 
-    const req = {
-      body: {
-        username: 'newuser',
-        password: 'password123',
-      },
-      ip: '127.0.0.1',
-      headers: {
-        'user-agent': 'TestAgent',
-      },
-    } as Request;
+    const req = createReq({ username: 'newuser', password: 'password123' }, '127.0.0.1', 'TestAgent');
 
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const res = createRes();
 
     await expect(register(mockRepo)(req, res)).rejects.toThrow('Failed to create user');
     expect(mockRepo.findUserByUsername).toHaveBeenCalledWith('newuser');
@@ -393,7 +250,7 @@ describe('register use case', () => {
   });
 
   it('handles repository error in saveRefreshToken gracefully', async () => {
-    const mockRepo = {
+    const mockRepo = createMockRepo({
       findUserByUsername: vi.fn().mockResolvedValue(null),
       saveRefreshToken: vi.fn().mockRejectedValue(new Error('Failed to save refresh token')),
       createUser: vi.fn().mockResolvedValue({
@@ -403,28 +260,14 @@ describe('register use case', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       }),
-      revokeRefreshToken: vi.fn(),
-      findRefreshToken: vi.fn(),
-    };
+    });
 
     mockGenerateAccessToken.mockReturnValue('new-access-token');
     mockGenerateRefreshToken.mockReturnValue('new-refresh-token');
 
-    const req = {
-      body: {
-        username: 'newuser',
-        password: 'password123',
-      },
-      ip: '127.0.0.1',
-      headers: {
-        'user-agent': 'TestAgent',
-      },
-    } as Request;
+    const req = createReq({ username: 'newuser', password: 'password123' }, '127.0.0.1', 'TestAgent');
 
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const res = createRes();
 
     await expect(register(mockRepo)(req, res)).rejects.toThrow('Failed to save refresh token');
     expect(mockRepo.createUser).toHaveBeenCalledWith('newuser', expect.any(String));
@@ -432,9 +275,8 @@ describe('register use case', () => {
   });
 
   it('hashes password before storing', async () => {
-    const mockRepo = {
+    const mockRepo = createMockRepo({
       findUserByUsername: vi.fn().mockResolvedValue(null),
-      saveRefreshToken: vi.fn(),
       createUser: vi.fn().mockResolvedValue({
         id: 'new-user-id',
         username: 'newuser',
@@ -442,29 +284,15 @@ describe('register use case', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       }),
-      revokeRefreshToken: vi.fn(),
-      findRefreshToken: vi.fn(),
-    };
+    });
 
     mockGenerateAccessToken.mockReturnValue('new-access-token');
     mockGenerateRefreshToken.mockReturnValue('new-refresh-token');
 
     const plainPassword = 'password123';
-    const req = {
-      body: {
-        username: 'newuser',
-        password: plainPassword,
-      },
-      ip: '127.0.0.1',
-      headers: {
-        'user-agent': 'TestAgent',
-      },
-    } as Request;
+    const req = createReq({ username: 'newuser', password: plainPassword }, '127.0.0.1', 'TestAgent');
 
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    } as unknown as Response;
+    const res = createRes();
 
     await register(mockRepo)(req, res);
 
