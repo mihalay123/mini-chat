@@ -27,7 +27,7 @@ export const prismaAuthRepository: AuthRepository = {
   },
 
   async saveRefreshToken(userId, token, meta) {
-    await prisma.refreshToken.create({
+    return await prisma.refreshToken.create({
       data: {
         token,
         userId,
@@ -39,7 +39,7 @@ export const prismaAuthRepository: AuthRepository = {
   },
 
   async revokeRefreshToken(token) {
-    await prisma.refreshToken.deleteMany({
+    return await prisma.refreshToken.deleteMany({
       where: { token },
     });
   },
