@@ -1,4 +1,3 @@
-import { prisma } from '@shared/prisma';
 import { Request, Response } from 'express';
 import { MessageRepository } from '../model/MessageRepository';
 
