@@ -1,6 +1,7 @@
 import { prisma } from '@shared/prisma';
 import { MessageRepository } from './MessageRepository';
 import { MessageWithSender, PaginatedMessages } from './types';
+import { getPaginatedResult } from '@shared/utils/pagination';
 
 export const prismaMessageRepository: MessageRepository = {
   async sendMessage(chatId, userId, text) {
@@ -35,17 +36,9 @@ export const prismaMessageRepository: MessageRepository = {
         },
       },
     });
-    const messages = results.slice(0, limit);
-    const nextCursor = results.length > limit ? results[limit - 1].id : null;
-    const hasMore = results.length > limit;
 
-    return {
-      items: messages,
-      meta: {
-        nextCursor,
-        hasMore,
-      },
-    };
+    const result = getPaginatedResult(results, limit);
+    return result;
   },
 
   async isChatMember(chatId, userId) {
