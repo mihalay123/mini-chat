@@ -19,4 +19,23 @@ export const prismaMessageRepository: MessageRepository = {
     });
     return message;
   },
+
+  async getMessages(chatId, userId) {
+    const messages = await prisma.message.findMany({
+      where: {
+        chatId,
+      },
+      include: {
+        sender: {
+          select: {
+            username: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+    return messages;
+  },
 };
