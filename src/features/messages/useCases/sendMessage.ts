@@ -20,14 +20,7 @@ export const sendMessage = (messageRepo: MessageRepository) => {
     }
 
     try {
-      const isChatMember = await prisma.chatUser.findUnique({
-        where: {
-          userId_chatId: {
-            userId,
-            chatId,
-          },
-        },
-      });
+      const isChatMember = await messageRepo.isChatMember(chatId, userId);
 
       if (!isChatMember) {
         return res.status(403).json({ error: 'You are not in this chat' });

@@ -38,4 +38,16 @@ export const prismaMessageRepository: MessageRepository = {
     });
     return messages;
   },
+
+  async isChatMember(chatId, userId) {
+    const chatUser = await prisma.chatUser.findUnique({
+      where: {
+        userId_chatId: {
+          userId,
+          chatId,
+        },
+      },
+    });
+    return chatUser !== null;
+  },
 };
