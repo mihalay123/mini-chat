@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { register } from './register';
 import { Request, Response } from 'express';
-import { hashPassword } from '../service/hash';
+
 import * as authJwtService from '../service/jwt';
 import { createReq, createMockRepo, createRes } from './__test-utils__/authTestHelpers';
+import { hashPassword } from '@shared/service/hash';
 
 // Mock the JWT service
 vi.mock('../service/jwt', () => ({

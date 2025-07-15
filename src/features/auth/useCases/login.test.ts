@@ -1,8 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { login } from './login';
-import { hashPassword } from '@features/auth/service/hash';
+
 import { Request } from 'express';
 import { createMockRepo, createReq, createRes } from './__test-utils__/authTestHelpers';
+import { hashPassword } from '@shared/service/hash';
 
 describe('login use case', () => {
   it('returns 200 and tokens for valid credentials', async () => {
