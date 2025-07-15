@@ -1,6 +1,7 @@
 import { Server } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import { socketAuthMiddleware } from '../shared/middlewares/socketAuthMiddleware';
+import { prisma } from '@shared/prisma';
 
 export let io: Server;
 
@@ -13,8 +14,17 @@ export const initSocket = (server: HttpServer) => {
 
   io.use(socketAuthMiddleware);
 
-  io.on('connection', (socket) => {
+  io.on('connection', async (socket) => {
     const user = (socket as any).user;
+
+    const chats = await prisma.chatUser.findMany({
+      where: { userId: user.id },
+      select: { chatId: true },
+    });
+
+    chats.forEach(({ chatId }) => {
+      socket.join(chatId);
+    });
 
     socket.on('chat:message', (data) => {
       console.log(`${user.username}: ${data.text}`);

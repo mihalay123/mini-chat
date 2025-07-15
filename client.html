@@ -15,7 +15,7 @@
       const socket = io('http://localhost:3000', {
         auth: {
           token:
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjBiNGI0MzhjLTQ2ZjQtNGRiYi05ZDcwLTk4N2ZhYzNjNDg3OCIsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3NTAzNTkxNDEsImV4cCI6MTc1MDM2Mjc0MX0.CJu2aNqAU4fAbOOG1k9Yz8iXCmg_ZQHhL66QVH0f3VU',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImZmY2FlYzcyLTA4NzktNDViYS1iZjNlLWYyYTI3MzVjNjJmMCIsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3NTI1NzkzMjMsImV4cCI6MTc1MjU4MjkyM30.5gSfjdQxE5AqTQLqjyP7hkDlVDyRPzJdZgdwKKvDc5Y',
         },
       });
 
@@ -23,17 +23,19 @@
         console.log('✅ connected');
       });
 
-      socket.on('chat:message', (data) => {
+      const chatId = 'a88e1e0c-8bca-4349-9d05-71baad650547';
+
+      socket.on(`${chatId}:message`, (data) => {
         const ul = document.getElementById('chat');
         const li = document.createElement('li');
         console.log('data', data);
-        li.innerText = `${data.user}: ${data.text}`;
+        li.innerText = `${data.senderUsername}: ${data.text}`;
         ul.appendChild(li);
       });
 
       function sendMessage() {
         const msg = document.getElementById('msg').value;
-        socket.emit('chat:message', { text: msg });
+        socket.emit(`${chatId}:message`, { text: msg });
       }
     </script>
   </body>
