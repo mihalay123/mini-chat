@@ -9,11 +9,12 @@ export const createMockMessageRepo = (overrides = {}): MessageRepository => ({
   ...overrides,
 });
 
-export const createReq = (params: any = {}, query: any = {}, user: any = null): Request =>
+export const createReq = (params: any = {}, query: any = {}, user: any = null, body: any = {}): Request =>
   ({
     params,
     query,
     user,
+    body,
   }) as Request;
 
 export const createRes = (): Response =>
@@ -21,6 +22,17 @@ export const createRes = (): Response =>
     status: vi.fn().mockReturnThis(),
     json: vi.fn(),
   }) as unknown as Response;
+
+export const mockMessage = {
+  id: 'msg-1',
+  text: 'Hello world',
+  chatId: 'chat-1',
+  userId: 'user-1',
+  senderId: 'user-1',
+  createdAt: new Date('2024-01-01T10:00:00Z'),
+  updatedAt: new Date('2024-01-01T10:00:00Z'),
+  sender: { username: 'testuser' },
+};
 
 export const mockMessages = {
   data: [
