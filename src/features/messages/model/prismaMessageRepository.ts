@@ -1,6 +1,5 @@
 import { prisma } from '@shared/prisma';
 import { MessageRepository } from './MessageRepository';
-import { MessageWithSender, PaginatedMessages } from './types';
 import { getPaginatedResult } from '@shared/utils/pagination';
 
 export const prismaMessageRepository: MessageRepository = {
