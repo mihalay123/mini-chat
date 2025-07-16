@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { ChatRepository } from '../model/ChatRepository';
 
 export const createChat = (chatRepo: ChatRepository) => async (req: Request, res: Response) => {
-  const { name, isGroup } = req.body || { isGroup: false, name: '' };
+  const { name = '', isGroup = false } = req.body || {};
   const userId = req.user?.id;
 
   if (!userId) {
